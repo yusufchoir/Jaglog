@@ -81,6 +81,24 @@ README.md               -> Dokumentasi dan panduan instalasi
 
 ---
 
+## Instalasi Cepat di Ubuntu 24.04 (Otomatis)
+
+Untuk memasang JagaLog secara cepat di server Ubuntu 24.04 LTS (atau sistem operasi berbasis Debian) dengan satu baris perintah:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/yusufchoir/Jaglog/main/install.sh -o install.sh && sudo bash install.sh
+```
+
+Skrip instalasi ini akan secara otomatis:
+1. Memverifikasi kompatibilitas sistem operasi dan memasang Docker & Docker Compose resmi (jika belum terpasang).
+2. Menyiapkan direktori instalasi di `/opt/jagalog`.
+3. Mengenerate berkas konfigurasi `.env` dengan kredensial acak yang aman (PostgreSQL, Redis, Session Secret, Encryption Key).
+4. Membuka port firewall (UFW) untuk Web UI (`3000/tcp`) serta listener Syslog (`5514/udp` & `5514/tcp`).
+5. Membangun dan menjalankan semua layanan kontainer Docker (`docker compose up -d --build`).
+6. Memverifikasi kesiapan sistem melalui healthcheck dan menampilkan URL dashboard beserta kredensial login admin awal.
+
+---
+
 ## Menjalankan di Lokal (Pengembangan)
 
 ### 1. Prasyarat
