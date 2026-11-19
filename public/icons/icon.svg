@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Latar Belakang Kotak Solid Sesuai Desain Humanis JagaLog -->
+  <rect width="512" height="512" rx="96" fill="#1F2430"/>
+  
+  <!-- Garis Aksen Biru Atas -->
+  <rect x="96" y="80" width="320" height="12" rx="6" fill="#1F5FBF"/>
+  
+  <!-- Kotak Aksen Biru Khas JagaLog Header -->
+  <rect x="96" y="128" width="48" height="48" rx="12" fill="#1F5FBF"/>
+  
+  <!-- Garis Aksen Merah Tipis -->
+  <rect x="160" y="148" width="256" height="8" rx="4" fill="#C8372D"/>
+  
+  <!-- Monogram Logo JL (Plus Jakarta Sans Style) -->
+  <g fill="#FAFAF8">
+    <!-- Huruf J -->
+    <path d="M 180 220 L 228 220 L 228 350 C 228 390 198 410 156 410 C 130 410 108 400 96 388 L 114 350 C 124 358 138 366 156 366 C 174 366 184 358 184 340 L 184 220 Z"/>
+    
+    <!-- Huruf L -->
+    <path d="M 276 220 L 320 220 L 320 366 L 416 366 L 416 406 L 276 406 Z"/>
+  </g>
+</svg>

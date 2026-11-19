@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Latar Belakang Penuh Tanpa Radius untuk Maskable Icon -->
+  <rect width="512" height="512" fill="#1F2430"/>
+  
+  <!-- Safe Zone Graphic Center (410x410 box di dalam 512x512) -->
+  <!-- Garis Aksen Biru Atas -->
+  <rect x="116" y="100" width="280" height="10" rx="5" fill="#1F5FBF"/>
+  
+  <!-- Kotak Aksen Biru Khas JagaLog Header -->
+  <rect x="116" y="140" width="40" height="40" rx="10" fill="#1F5FBF"/>
+  
+  <!-- Garis Aksen Merah Tipis -->
+  <rect x="172" y="156" width="224" height="8" rx="4" fill="#C8372D"/>
+  
+  <!-- Monogram Logo JL di dalam Safe Area -->
+  <g fill="#FAFAF8">
+    <!-- Huruf J -->
+    <path d="M 190 220 L 232 220 L 232 340 C 232 376 206 396 168 396 C 144 396 126 388 116 376 L 132 342 C 140 348 152 356 168 356 C 184 356 192 348 192 332 L 192 220 Z"/>
+    
+    <!-- Huruf L -->
+    <path d="M 276 220 L 316 220 L 316 356 L 396 356 L 396 392 L 276 392 Z"/>
+  </g>
+</svg>

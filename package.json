@@ -1,0 +1,49 @@
+{
+  "name": "jagalog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JagaLog – Aplikasi Penerima & Analisa Log Perangkat Jaringan",
+  "scripts": {
+    "dev": "next dev app",
+    "dev:collector": "tsx watch collector/src/index.ts",
+    "build": "tsx scripts/check_react_hooks.ts && next build app",
+    "start": "tsx shared/src/migrate.ts && next start app",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx shared/src/migrate.ts",
+    "db:seed": "tsx shared/src/seed.ts",
+    "cleaner": "tsx shared/src/cleaner.ts",
+    "clean:dev": "rm -rf app/.next",
+    "clean:test-data": "tsx scripts/clean_test_data.ts",
+    "clean:test-data:apply": "tsx scripts/clean_test_data.ts --apply",
+    "lint": "tsx scripts/check_react_hooks.ts",
+    "seed:peta-demo": "tsx scripts/seed_peta_demo.ts",
+    "check:data": "tsx scripts/check_data.ts",
+    "test": "node --test --import tsx shared/tests/**/*.test.ts",
+    "bench:ui": "tsx scripts/benchmark_ui.ts"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
+    "@xyflow/react": "^12.12.1",
+    "bullmq": "^5.41.0",
+    "dagre": "^0.8.5",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.4",
+    "ioredis": "^5.5.0",
+    "next": "^14.2.24",
+    "nodemailer": "^10.3.1",
+    "postgres": "^3.4.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/dagre": "^0.7.54",
+    "@types/node": "^22.13.4",
+    "@types/nodemailer": "^8.0.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "drizzle-kit": "^0.30.4",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,148 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    container_name: jagalog-app
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?wajib diisi}
+      REDIS_URL: ${REDIS_URL:?wajib diisi}
+      SESSION_SECRET: ${SESSION_SECRET:?wajib diisi}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?wajib diisi}
+      SYSLOG_UDP_PORT: ${SYSLOG_UDP_PORT:-5514}
+      SYSLOG_TCP_PORT: ${SYSLOG_TCP_PORT:-5514}
+      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-claude-3-5-sonnet-20241022}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
+      TZ: ${TZ:-Asia/Jakarta}
+    command: sh -c "npx tsx shared/src/migrate.ts && npx tsx shared/src/seed.ts && npm start"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  collector:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.collector
+    container_name: jagalog-collector
+    restart: always
+    cap_add:
+      - NET_RAW
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?wajib diisi}
+      REDIS_URL: ${REDIS_URL:?wajib diisi}
+      SYSLOG_UDP_PORT: ${SYSLOG_UDP_PORT:-5514}
+      SYSLOG_TCP_PORT: ${SYSLOG_TCP_PORT:-5514}
+      COLLECTOR_HEALTH_PORT: 5515
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      TZ: ${TZ:-Asia/Jakarta}
+    ports:
+      - "${SYSLOG_UDP_PORT:-5514}:${SYSLOG_UDP_PORT:-5514}/udp"
+      - "${SYSLOG_TCP_PORT:-5514}:${SYSLOG_TCP_PORT:-5514}/tcp"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:5515/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.collector
+    container_name: jagalog-worker
+    restart: always
+    cap_add:
+      - NET_RAW
+    command: ["npx", "tsx", "collector/src/worker-service.ts"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?wajib diisi}
+      REDIS_URL: ${REDIS_URL:?wajib diisi}
+      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-claude-3-5-sonnet-20241022}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      TZ: ${TZ:-Asia/Jakarta}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: jagalog-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?wajib diisi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?wajib diisi}
+      POSTGRES_DB: ${POSTGRES_DB:?wajib diisi}
+      TZ: ${TZ:-Asia/Jakarta}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?wajib diisi} -d ${POSTGRES_DB:?wajib diisi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: jagalog-redis
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?wajib diisi} --maxmemory 512mb --maxmemory-policy volatile-lru
+    volumes:
+      - redis_prod_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?wajib diisi}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_prod_data:
+  redis_prod_data:

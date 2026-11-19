@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "id": "/?source=pwa",
+  "name": "JagaLog – Pemantauan & Analisa Log Perangkat Jaringan",
+  "short_name": "JagaLog",
+  "description": "Aplikasi Pemantauan dan Analisa Log Perangkat Jaringan dengan AI",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "id",
+  "dir": "ltr",
+  "theme_color": "#FAFAF8",
+  "background_color": "#FAFAF8",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Perangkat Jaringan",
+      "short_name": "Perangkat",
+      "description": "Pantau status dan log perangkat terdaftar",
+      "url": "/perangkat?source=pwa",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Insiden Keamanan",
+      "short_name": "Insiden",
+      "description": "Periksa indikasi serangan dan insiden keamanan",
+      "url": "/insiden?source=pwa",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
