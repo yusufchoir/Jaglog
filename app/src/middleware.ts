@@ -56,11 +56,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Jika sudah login dan mencoba membuka halaman /login
-  if (sessionToken && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
   // Buat respons dengan Header Keamanan Lengkap
   const response = NextResponse.next();
 

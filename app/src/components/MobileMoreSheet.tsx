@@ -31,23 +31,27 @@ export function MobileMoreSheet({
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      // 1. Bersihkan cache Service Worker jika terpasang
       if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-        navigator.serviceWorker.controller?.postMessage({ type: "CLEAR_CACHE" });
-        if ("caches" in window) {
+        try {
+          navigator.serviceWorker.controller?.postMessage({ type: "CLEAR_CACHE" });
+        } catch {}
+      }
+      if (typeof window !== "undefined" && "caches" in window) {
+        try {
           const keys = await caches.keys();
           await Promise.all(keys.map((k) => caches.delete(k)));
-        }
+        } catch {}
       }
-
-      // 2. Request logout API
-      await fetch("/api/auth/logout", { method: "POST" });
-      onClose();
-      router.push("/login");
-      router.refresh();
+      await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     } catch (err) {
-      console.error("Gagal logout:", err);
-      setIsLoggingOut(false);
+      console.warn("Gagal logout:", err);
+    } finally {
+      onClose();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      } else {
+        router.push("/login");
+      }
     }
   };
 

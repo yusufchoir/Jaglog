@@ -107,6 +107,7 @@ services:
     image: postgres:16-alpine
     container_name: jagalog-postgres
     restart: always
+    command: postgres -c shared_buffers=64MB -c work_mem=2MB -c maintenance_work_mem=16MB -c max_connections=40
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?wajib diisi}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?wajib diisi}
@@ -129,7 +130,7 @@ services:
     image: redis:7-alpine
     container_name: jagalog-redis
     restart: always
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?wajib diisi} --maxmemory 512mb --maxmemory-policy volatile-lru
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?wajib diisi} --maxmemory 64mb --maxmemory-policy volatile-lru
     volumes:
       - redis_prod_data:/data
     healthcheck:

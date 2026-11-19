@@ -12,8 +12,7 @@ export const redis = new Redis(redisUrl, {
   commandTimeout: 5000,
   enableReadyCheck: false,
   retryStrategy(times) {
-    if (times > 5) return null; // berhenti reconnect setelah 5 kali gagal
-    const delay = Math.min(times * 100, 2000);
+    const delay = Math.min(times * 150, 3000);
     return delay;
   },
 });

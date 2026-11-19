@@ -6,6 +6,8 @@ import { UserProvider } from "@/components/UserProvider";
 import { AppShell } from "@/components/AppShell";
 import { getCurrentUser } from "@/lib/session";
 
+export const dynamic = "force-dynamic";
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,

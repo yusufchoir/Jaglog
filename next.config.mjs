@@ -13,6 +13,7 @@ const nextConfig = {
     return config;
   },
   experimental: {
+    cpus: 1,
     serverComponentsExternalPackages: ["postgres", "@node-rs/argon2", "ioredis", "bullmq"],
   },
   async headers() {

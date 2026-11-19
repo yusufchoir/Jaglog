@@ -68,7 +68,11 @@ export function UserProvider({
         setCurrentUser(null);
         lastValidUserRef.current = null;
         setRoleStatus("error");
-        router.push("/login");
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        } else {
+          router.push("/login");
+        }
         return;
       }
 

@@ -36,18 +36,25 @@ export function HeaderNav({ currentUser: propUser }: HeaderNavProps = {}) {
     setIsLoggingOut(true);
     try {
       if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-        navigator.serviceWorker.controller?.postMessage({ type: "CLEAR_CACHE" });
-        if ("caches" in window) {
+        try {
+          navigator.serviceWorker.controller?.postMessage({ type: "CLEAR_CACHE" });
+        } catch {}
+      }
+      if (typeof window !== "undefined" && "caches" in window) {
+        try {
           const keys = await caches.keys();
           await Promise.all(keys.map((k) => caches.delete(k)));
-        }
+        } catch {}
       }
-      await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/login");
-      router.refresh();
+      await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     } catch (err) {
-      console.error("Gagal logout:", err);
-      setIsLoggingOut(false);
+      console.warn("Gagal logout:", err);
+    } finally {
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      } else {
+        router.push("/login");
+      }
     }
   };
 
