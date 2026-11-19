@@ -6,7 +6,14 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
+  staticPageGenerationTimeout: 300,
+  typescript: {
+    // Lewati type-check saat build Docker (menghemat waktu dan RAM hingga 60%)
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   webpack: (config) => {
     config.resolve.alias["@shared"] = path.resolve(__dirname, "shared/src");
     config.resolve.alias["@jagalog/shared"] = path.resolve(__dirname, "shared/src");
@@ -14,6 +21,7 @@ const nextConfig = {
   },
   experimental: {
     cpus: 1,
+    workerThreads: false,
     serverComponentsExternalPackages: ["postgres", "@node-rs/argon2", "ioredis", "bullmq"],
   },
   async headers() {

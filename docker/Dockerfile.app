@@ -11,8 +11,8 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN npm run build && rm -rf /app/.next/cache
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+RUN npm run build && rm -rf /app/app/.next/cache /app/.next/cache
 RUN mkdir -p /app/public
 
 FROM base AS runner
