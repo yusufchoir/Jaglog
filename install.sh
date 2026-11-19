@@ -82,9 +82,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # =============================================================================
-# LANGKAH 1: Verifikasi Sistem Operasi
+# LANGKAH 1: Verifikasi Sistem Operasi & Memori
 # =============================================================================
-log_section "[1/6] Memeriksa kompatibilitas sistem operasi..."
+log_section "[1/6] Memeriksa kompatibilitas sistem operasi dan memori..."
 if [ -f /etc/os-release ]; then
   # shellcheck source=/dev/null
   . /etc/os-release
@@ -95,6 +95,28 @@ else
   log_warn "Berkas /etc/os-release tidak ditemukan. Melanjutkan dengan asumsi Linux umum."
   OS_NAME="Linux"
   OS_VER="unknown"
+fi
+
+# Proteksi Out-Of-Memory (OOM): Next.js build butuh minimal ~2GB memori
+TOTAL_RAM_MB=$(free -m 2>/dev/null | awk '/^Mem:/{print $2}' || echo "2048")
+CURRENT_SWAP_MB=$(free -m 2>/dev/null | awk '/^Swap:/{print $2}' || echo "0")
+log_info "Total RAM: ${TOTAL_RAM_MB} MB | Swap aktif: ${CURRENT_SWAP_MB} MB"
+
+if [ "$CURRENT_SWAP_MB" -lt 1500 ] && [ "$TOTAL_RAM_MB" -lt 3500 ]; then
+  log_info "RAM server < 4GB dan Swap minim. Menyiapkan 2GB Swapfile untuk mencegah OOM Killer saat build Docker..."
+  if [ ! -f /swapfile ]; then
+    (fallocate -l 2G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=2048 2>/dev/null)
+    chmod 600 /swapfile
+    mkswap /swapfile >/dev/null 2>&1
+    swapon /swapfile >/dev/null 2>&1 || true
+    if ! grep -q "/swapfile" /etc/fstab 2>/dev/null; then
+      echo "/swapfile none swap sw 0 0" >> /etc/fstab
+    fi
+    log_info "${GREEN}Swapfile 2GB berhasil dibuat dan diaktifkan.${NC}"
+  else
+    swapon /swapfile >/dev/null 2>&1 || true
+    log_info "Swapfile yang sudah ada berhasil diaktifkan."
+  fi
 fi
 
 # =============================================================================
