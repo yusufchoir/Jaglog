@@ -97,22 +97,30 @@ else
   OS_VER="unknown"
 fi
 
-# Proteksi Out-Of-Memory (OOM): Next.js build butuh minimal ~2GB memori
+# Proteksi Out-Of-Memory (OOM): Next.js build butuh minimal ~1.5GB total memori
 TOTAL_RAM_MB=$(free -m 2>/dev/null | awk '/^Mem:/{print $2}' || echo "2048")
 CURRENT_SWAP_MB=$(free -m 2>/dev/null | awk '/^Swap:/{print $2}' || echo "0")
-log_info "Total RAM: ${TOTAL_RAM_MB} MB | Swap aktif: ${CURRENT_SWAP_MB} MB"
+TOTAL_MEM_MB=$(( TOTAL_RAM_MB + CURRENT_SWAP_MB ))
+FREE_DISK_MB=$(df -m / 2>/dev/null | awk 'NR==2{print $4}' || echo "10000")
 
-if [ "$CURRENT_SWAP_MB" -lt 1500 ] && [ "$TOTAL_RAM_MB" -lt 3500 ]; then
-  log_info "RAM server < 4GB dan Swap minim. Menyiapkan 2GB Swapfile untuk mencegah OOM Killer saat build Docker..."
+log_info "Total RAM: ${TOTAL_RAM_MB} MB | Swap aktif: ${CURRENT_SWAP_MB} MB | Sisa Disk: ${FREE_DISK_MB} MB"
+
+# Hanya buat swap tambahan jika total memori (RAM + Swap) masih di bawah 2000 MB DAN ruang disk >= 3GB
+if [ "$TOTAL_MEM_MB" -lt 2000 ] && [ "$FREE_DISK_MB" -ge 3000 ]; then
+  NEED_SWAP_MB=$(( 2048 - TOTAL_MEM_MB ))
+  if [ "$NEED_SWAP_MB" -lt 1024 ]; then
+    NEED_SWAP_MB=1024
+  fi
+  log_info "Total memori gabungan < 2GB. Menyiapkan ${NEED_SWAP_MB} MB Swapfile untuk kelancaran build..."
   if [ ! -f /swapfile ]; then
-    (fallocate -l 2G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=2048 2>/dev/null)
+    (fallocate -l "${NEED_SWAP_MB}M" /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count="$NEED_SWAP_MB" 2>/dev/null)
     chmod 600 /swapfile
     mkswap /swapfile >/dev/null 2>&1
     swapon /swapfile >/dev/null 2>&1 || true
     if ! grep -q "/swapfile" /etc/fstab 2>/dev/null; then
       echo "/swapfile none swap sw 0 0" >> /etc/fstab
     fi
-    log_info "${GREEN}Swapfile 2GB berhasil dibuat dan diaktifkan.${NC}"
+    log_info "${GREEN}Swapfile ${NEED_SWAP_MB} MB berhasil dibuat dan diaktifkan.${NC}"
   else
     swapon /swapfile >/dev/null 2>&1 || true
     log_info "Swapfile yang sudah ada berhasil diaktifkan."
@@ -290,6 +298,11 @@ fi
 # LANGKAH 6: Membangun dan Menjalankan Kontainer JagaLog
 # =============================================================================
 log_section "[6/6] Membangun dan menjalankan kontainer JagaLog..."
+log_info "Membersihkan cache sistem dan Docker lama untuk menghemat ruang disk..."
+apt-get clean >/dev/null 2>&1 || true
+docker builder prune -f >/dev/null 2>&1 || true
+docker image prune -f >/dev/null 2>&1 || true
+
 log_info "Proses build Docker image sedang berlangsung. Ini bisa memakan 3–10 menit pertama kali..."
 
 # Hentikan kontainer lama dengan aman (tidak abort meskipun belum ada)
@@ -297,6 +310,9 @@ docker compose --env-file "$ENV_FILE" down --remove-orphans 2>/dev/null || true
 
 # Build & jalankan semua service
 docker compose --env-file "$ENV_FILE" up -d --build
+
+# Bersihkan build cache yang sudah selesai digunakan
+docker builder prune -f >/dev/null 2>&1 || true
 
 # Healthcheck: tunggu /api/health merespons (maks 120 detik / 60 percobaan)
 echo ""

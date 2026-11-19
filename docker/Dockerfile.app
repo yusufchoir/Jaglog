@@ -12,7 +12,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN npm run build
+RUN npm run build && rm -rf /app/.next/cache
 RUN mkdir -p /app/public
 
 FROM base AS runner
@@ -35,7 +35,7 @@ COPY --chown=nextjs:nodejs --from=builder /app/drizzle.config.ts ./drizzle.confi
 COPY --chown=nextjs:nodejs --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --chown=nextjs:nodejs docker/entrypoint.sh /app/entrypoint.sh
 
-RUN chmod +x /app/entrypoint.sh && chown -R nextjs:nodejs /app
+RUN chmod +x /app/entrypoint.sh
 
 USER nextjs
 

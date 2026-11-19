@@ -52,6 +52,10 @@ services:
       SYSLOG_UDP_PORT: ${SYSLOG_UDP_PORT:-5514}
       SYSLOG_TCP_PORT: ${SYSLOG_TCP_PORT:-5514}
       COLLECTOR_HEALTH_PORT: 5515
+      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-claude-3-5-sonnet-20241022}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
       APP_URL: ${APP_URL:-http://localhost:3000}
       TZ: ${TZ:-Asia/Jakarta}
@@ -59,6 +63,8 @@ services:
       - "${SYSLOG_UDP_PORT:-5514}:${SYSLOG_UDP_PORT:-5514}/udp"
       - "${SYSLOG_TCP_PORT:-5514}:${SYSLOG_TCP_PORT:-5514}/tcp"
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
@@ -67,36 +73,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  worker:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.collector
-    container_name: jagalog-worker
-    restart: always
-    cap_add:
-      - NET_RAW
-    command: ["npx", "tsx", "collector/src/worker-service.ts"]
-    environment:
-      DATABASE_URL: ${DATABASE_URL:?wajib diisi}
-      REDIS_URL: ${REDIS_URL:?wajib diisi}
-      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
-      AI_API_KEY: ${AI_API_KEY:-}
-      AI_MODEL: ${AI_MODEL:-claude-3-5-sonnet-20241022}
-      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
-      APP_URL: ${APP_URL:-http://localhost:3000}
-      TZ: ${TZ:-Asia/Jakarta}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     logging:
       driver: "json-file"
       options:

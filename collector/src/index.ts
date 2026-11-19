@@ -5,6 +5,7 @@ import { startIngestWorker } from "./worker";
 import { startDetectionWorker } from "@shared/detection";
 import { startDeviceStatusWorker } from "@shared/monitoring";
 import { startNotifyWorker } from "@shared/notifications";
+import { scheduleRetentionJob, startRetentionWorker } from "@shared/cleaner";
 
 dotenv.config();
 
@@ -30,6 +31,16 @@ startDetectionWorker(30);
 
 // 5. Jalankan Monitoring Status Perangkat (setiap 30 detik)
 startDeviceStatusWorker(30);
+
+// 6. Jalankan Pembersihan Retensi Log Harian
+scheduleRetentionJob()
+  .then(() => {
+    startRetentionWorker();
+    console.log("[Collector] Retention Cleanup Worker & Schedule aktif.");
+  })
+  .catch((err) => {
+    console.error("[Collector] Gagal mendaftarkan retention schedule:", err);
+  });
 
 // 6. Jalankan Healthcheck HTTP Server (Port 8080)
 const healthServer = http.createServer((req, res) => {
